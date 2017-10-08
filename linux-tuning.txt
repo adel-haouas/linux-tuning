@@ -1,0 +1,17 @@
+##########################################################################
+## Tuning Script for Centos/Redhat Server                               ##
+## Written by: Adel Haouas (adel.haouas@gmail.com)                      ##
+## Last modified: 2017.04.15                                            ##
+##########################################################################
+## Yum tuning
+cat /etc/yum/pluginconf.d/fastestmirror.conf |egrep -v "exclude\s*=" >/etc/yum/pluginconf.d/fastestmirror.conf-
+echo "exclude=\.gov, facebook, \.il, \.co\.zw, \.co\.za, .rpmfind.net" >>/etc/yum/pluginconf.d/fastestmirror.conf-
+mv -f /etc/yum/pluginconf.d/fastestmirror.conf- /etc/yum/pluginconf.d/fastestmirror.conf
+
+#Force yum to use IPv4
+sed -i "s/^ip_resolve.*$//g;s/^##Force yum to use IPv4.*$//g" /etc/yum.conf
+cat -s /etc/yum.conf > /etc/yum.conf--;mv -f /etc/yum.conf-- /etc/yum.conf
+echo -e "##Force yum to use IPv4\nip_resolve=4" >>/etc/yum.conf 
+
+yum clean all;yum check-update
+
