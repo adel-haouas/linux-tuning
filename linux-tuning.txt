@@ -65,15 +65,24 @@ EOF
 
  sed -i "s/'ls -l/'ls -lh/g" /etc/profile.d/colorls.sh
  sed -i "s/'ls -lhh/'ls -lh/g" /etc/profile.d/colorls.sh
-
  cat /etc/profile.d/colorls.sh |egrep "alias grep"
  [[ $? = 1 ]] && echo "alias grep='grep --color=auto' 2>/dev/null" >>/etc/profile.d/colorls.sh
-
  cat /etc/profile.d/colorls.sh |egrep "alias egrep"
  [[ $? = 1 ]] && echo "alias egrep='egrep --color=auto' 2>/dev/null" >>/etc/profile.d/colorls.sh
-
  . /etc/profile
 
  echo 'NOZEROCONF=yes'>>/etc/sysconfig/network
 
+ echo '# To disable IPv6
+##centos 7
+echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /usr/lib/sysctl.d/00-system.conf
+echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /usr/lib/sysctl.d/00-system.conf
+sysctl -p
+
+##centos 6
+echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
+sysctl -p
+'
 fi
+#### That's all 
