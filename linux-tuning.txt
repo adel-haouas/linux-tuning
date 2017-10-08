@@ -1,17 +1,79 @@
 ##########################################################################
 ## Tuning Script for Centos/Redhat Server                               ##
 ## Written by: Adel Haouas (adel.haouas@gmail.com)                      ##
-## Last modified: 2017.04.15                                            ##
+## Last modified: 2017.10.08                                            ##
 ##########################################################################
-## Yum tuning
-cat /etc/yum/pluginconf.d/fastestmirror.conf |egrep -v "exclude\s*=" >/etc/yum/pluginconf.d/fastestmirror.conf-
-echo "exclude=\.gov, facebook, \.il, \.co\.zw, \.co\.za, .rpmfind.net" >>/etc/yum/pluginconf.d/fastestmirror.conf-
-mv -f /etc/yum/pluginconf.d/fastestmirror.conf- /etc/yum/pluginconf.d/fastestmirror.conf
 
-#Force yum to use IPv4
-sed -i "s/^ip_resolve.*$//g;s/^##Force yum to use IPv4.*$//g" /etc/yum.conf
-cat -s /etc/yum.conf > /etc/yum.conf--;mv -f /etc/yum.conf-- /etc/yum.conf
-echo -e "##Force yum to use IPv4\nip_resolve=4" >>/etc/yum.conf 
+DISTRO=""
+if [ "$(uname -s)" == "Linux" ]; then
+  [[ -f /etc/redhat-release ]] && DISTRO=`cat /etc/redhat-release | awk '{print $1}'`
+  [[ -f /etc/fedora-release ]] && DISTRO="Fedora"
+  [[ -f /etc/debian_version ]] && DISTRO="Debian"
+fi
+#echo $DISTRO
 
-yum clean all;yum check-update
+if [ "${DISTRO}" = "CentOS" ]; then
+ echo "Distribution = $DISTRO"
 
+ echo "# Yum tuning"
+ cat /etc/yum/pluginconf.d/fastestmirror.conf |egrep -v "exclude\s*=" >/etc/yum/pluginconf.d/fastestmirror.conf-
+ echo "exclude=\.gov, facebook, \.il, \.co\.zw, \.co\.za, .rpmfind.net" >>/etc/yum/pluginconf.d/fastestmirror.conf-
+ mv -f /etc/yum/pluginconf.d/fastestmirror.conf- /etc/yum/pluginconf.d/fastestmirror.conf
+
+ echo "#Force yum to use IPv4"
+ sed -i "s/^ip_resolve.*$//g;s/^##Force yum to use IPv4.*$//g" /etc/yum.conf
+ cat -s /etc/yum.conf > /etc/yum.conf--;mv -f /etc/yum.conf-- /etc/yum.conf
+ echo -e "##Force yum to use IPv4\nip_resolve=4" >>/etc/yum.conf 
+
+ yum install --quiet -y epel-release screen
+ echo "#Fixing logging time"
+ rm -f /etc/localtime && ln -s /usr/share/zoneinfo/Africa/Tunis /etc/localtime
+
+ echo "# Installing useful packages"
+ screen yum install --quiet bash-completion mtr vim ntpdate bind-utils nload mlocate logrotate wget htop multitail openssh-clients bzip2 dmidecode net-snmp net-snmp-utils fping -y
+
+ echo "# Be sure that all packages are Up-To-Date"
+ sed -i "s/installonly_limit.*$/installonly_limit=3/g" /etc/yum.conf
+ screen yum update -q -y
+
+ echo "# Activate compression in logrotate"
+ sed -i "s/^#compress$/compress/g;s/^#dateext$/dateext/g" /etc/logrotate.conf
+ find /var/log/ -name "*-201*"|egrep -v ".gz$"|awk '{print "gzip -9 "$0" &"}' | sh
+
+ echo "# Fix timezone in php.ini"
+ sed -i "s/^;date.timezone.*$/date.timezone = Africa\/Tunis/g" /etc/php.ini
+ sed -i '$!N; /^\(.*\)\n\1$/!P; D' /etc/php.ini
+
+ ## in case of CENTOS 7
+ cat /etc/redhat-release |egrep "CentOS Linux release 7">/dev/null
+ if [ $? -eq 0 ]; then
+  systemctl set-default multi-user.target
+  screen yum install net-tools -y
+ fi
+
+ echo "# Disabling selinux"
+ sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
+
+ cat << 'EOF' >> /etc/profile 
+export LANG=en_US.UTF-8
+HISTTIMEFORMAT="%d/%m/%Y__%T # "
+export $HISTTIMEFORMAT 2>/dev/null
+export HISTSIZE=100000
+export TZ='Africa/Tunis'
+EOF
+ . /etc/profile 
+
+ sed -i "s/'ls -l/'ls -lh/g" /etc/profile.d/colorls.sh
+ sed -i "s/'ls -lhh/'ls -lh/g" /etc/profile.d/colorls.sh
+
+ cat /etc/profile.d/colorls.sh |egrep "alias grep"
+ [[ $? = 1 ]] && echo "alias grep='grep --color=auto' 2>/dev/null" >>/etc/profile.d/colorls.sh
+
+ cat /etc/profile.d/colorls.sh |egrep "alias egrep"
+ [[ $? = 1 ]] && echo "alias egrep='egrep --color=auto' 2>/dev/null" >>/etc/profile.d/colorls.sh
+
+ . /etc/profile
+
+ echo 'NOZEROCONF=yes'>>/etc/sysconfig/network
+
+fi
