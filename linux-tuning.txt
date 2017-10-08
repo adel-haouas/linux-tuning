@@ -55,6 +55,7 @@ if [ "${DISTRO}" = "CentOS" ]; then
  sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
 
  cat << 'EOF' >> /etc/profile 
+
 export LANG=en_US.UTF-8
 HISTTIMEFORMAT="%d/%m/%Y__%T # "
 export $HISTTIMEFORMAT 2>/dev/null
