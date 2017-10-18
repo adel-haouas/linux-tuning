@@ -25,16 +25,16 @@ if [ "${DISTRO}" = "CentOS" ]; then
  cat -s /etc/yum.conf > /etc/yum.conf--;mv -f /etc/yum.conf-- /etc/yum.conf
  echo -e "##Force yum to use IPv4\nip_resolve=4" >>/etc/yum.conf 
 
- yum install --quiet -y epel-release screen
+ yum install -y epel-release screen
  echo "#Fixing logging time"
  rm -f /etc/localtime && ln -s /usr/share/zoneinfo/Africa/Tunis /etc/localtime
 
  echo "# Installing useful packages"
- screen yum install --quiet bash-completion mtr vim ntpdate bind-utils nload mlocate logrotate wget htop multitail openssh-clients bzip2 dmidecode net-snmp net-snmp-utils fping -y
+ screen yum install bash-completion mtr vim ntpdate bind-utils nload mlocate logrotate wget htop multitail openssh-clients bzip2 dmidecode net-snmp net-snmp-utils fping -y
 
  echo "# Be sure that all packages are Up-To-Date"
  sed -i "s/installonly_limit.*$/installonly_limit=3/g" /etc/yum.conf
- screen yum update -q -y
+ screen yum update -y
 
  echo "# Activate compression in logrotate"
  sed -i "s/^#compress$/compress/g;s/^#dateext$/dateext/g" /etc/logrotate.conf
