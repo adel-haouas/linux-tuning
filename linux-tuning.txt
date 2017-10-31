@@ -48,6 +48,7 @@ if [ "${DISTRO}" = "CentOS" ]; then
  cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config-bak 
  sed -i "s/#ListenAddress 0.0.0.0/ListenAddress 0.0.0.0/g;s/#UseDNS yes/UseDNS no/g" /etc/ssh/sshd_config
  cat /etc/ssh/sshd_config|egrep -v "UseDNS no" >/etc/ssh/sshd_config.tmp;mv /etc/ssh/sshd_config.tmp /etc/ssh/sshd_config
+ cat /etc/ssh/sshd_config|egrep -v "UseDNS no" >/etc/ssh/sshd_config.tmp;cat /etc/ssh/sshd_config.tmp > /etc/ssh/sshd_config
  echo "UseDNS no" >> /etc/ssh/sshd_config
  sed -i '$!N; /^\(.*\)\n\1$/!P; D' /etc/ssh/sshd_config
  service sshd restart
