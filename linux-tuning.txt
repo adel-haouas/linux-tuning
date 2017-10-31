@@ -44,6 +44,17 @@ if [ "${DISTRO}" = "CentOS" ]; then
  sed -i "s/^;date.timezone.*$/date.timezone = Africa\/Tunis/g" /etc/php.ini
  sed -i '$!N; /^\(.*\)\n\1$/!P; D' /etc/php.ini
 
+ echo "# Fix slow ssh connection"
+ cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config-bak 
+ sed -i "s/#ListenAddress 0.0.0.0/ListenAddress 0.0.0.0/g;s/#UseDNS yes/UseDNS no/g" /etc/ssh/sshd_config
+ cat /etc/ssh/sshd_config|egrep -v "UseDNS no" >/etc/ssh/sshd_config.tmp;mv /etc/ssh/sshd_config.tmp /etc/ssh/sshd_config
+ echo "UseDNS no" >> /etc/ssh/sshd_config
+ sed -i '$!N; /^\(.*\)\n\1$/!P; D' /etc/ssh/sshd_config
+ service sshd restart
+
+## sed '$!N; /^\(.*\)\n\1$/!P; D': delete duplicate, consecutive lines from a file (emulates "uniq").
+## First line in a set of duplicate lines is kept, rest are deleted.
+
  ## in case of CENTOS 7
  cat /etc/redhat-release |egrep "CentOS Linux release 7">/dev/null
  if [ $? -eq 0 ]; then
