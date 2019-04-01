@@ -38,7 +38,14 @@ if [ "${DISTRO}" = "CentOS" ]; then
 
  echo "# Activate compression in logrotate"
  sed -i "s/^#compress$/compress/g;s/^#dateext$/dateext/g" /etc/logrotate.conf
- find /var/log/ -name "*-201*"|egrep -v ".gz$"|awk '{print "gzip -9 "$0" &"}' | sh
+ sed -i "s/^compress$/compress\n\nid1\nid2\nid3\nid4\nid5/g" /etc/logrotate.conf
+ sed -i "s/^id1$/# use bzip2 whith higher compression than gzip/g" /etc/logrotate.conf
+ sed -i "s/^id2$/compresscmd \/usr\/bin\/bzip2/g" /etc/logrotate.conf
+ sed -i "s/^id3$/uncompresscmd \/usr\/bin\/bunzip2/g" /etc/logrotate.conf
+ sed -i "s/^id4$/compressoptions -9/g" /etc/logrotate.conf
+ sed -i "s/^id5$/compressext .bz2/g" /etc/logrotate.conf
+ find /var/log/ -name "*-201*"|egrep -v ".gz$|.bz2$"|awk '{print "bz2 -9fz "$0" &"}' | sh
+ #find /var/log/ -name "*-201*"|egrep -v ".gz$"|awk '{print "gzip -9 "$0" &"}' | sh
 
  echo "# Fix timezone in php.ini"
  sed -i "s/^;date.timezone.*$/date.timezone = Africa\/Tunis/g" /etc/php.ini
