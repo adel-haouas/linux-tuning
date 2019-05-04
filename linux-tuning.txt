@@ -46,6 +46,19 @@ if [ "${DISTRO}" = "CentOS" ]; then
  sed -i "s/^id5$/compressext .bz2/g" /etc/logrotate.conf
  find /var/log/ -name "*-201*"|egrep -v ".gz$|.bz2$"|awk '{print "bzip2 -9fz "$0" &"}' | sh
  #find /var/log/ -name "*-201*"|egrep -v ".gz$"|awk '{print "gzip -9 "$0" &"}' | sh
+ 
+ sed -i "s/^\/var\/log\/spooler.*$//g" /etc/logrotate.d/syslog;echo>>/etc/logrotate.d/syslog
+cat << 'EOF' >> /etc/logrotate.d/syslog
+/var/log/spooler
+{
+    weekly
+    rotate 0
+    sharedscripts
+    postrotate
+        /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+    endscript
+}
+EOF
 
  echo "# Fix timezone in php.ini"
  sed -i "s/^;date.timezone.*$/date.timezone = Africa\/Tunis/g" /etc/php.ini
