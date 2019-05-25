@@ -1,7 +1,7 @@
 ##########################################################################
 ## Tuning Script for Centos/Redhat/Debian/Ubuntu Server                 ##
 ## Written by: Adel Haouas (adel.haouas@gmail.com)                      ##
-## Last modified: 2019.05.04                                            ##
+## Last modified: 2019.05.25                                            ##
 ##########################################################################
 
 DISTRO=""
@@ -75,7 +75,7 @@ EOF
 ## sed '$!N; /^\(.*\)\n\1$/!P; D': delete duplicate, consecutive lines from a file (emulates "uniq").
 ## First line in a set of duplicate lines is kept, rest are deleted.
 
-echo 'Hide "Are you sure you want to continue connecting (yes/no)?"'
+echo 'Hide "Are you sure you want to continue connecting (yes/no)?" when opening s ssh connection'
 mkdir -pv ~/.ssh/ && chmod 0700 ~/.ssh/
 echo "StrictHostKeyChecking no" >> ~/.ssh/config
 
