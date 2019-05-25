@@ -75,6 +75,10 @@ EOF
 ## sed '$!N; /^\(.*\)\n\1$/!P; D': delete duplicate, consecutive lines from a file (emulates "uniq").
 ## First line in a set of duplicate lines is kept, rest are deleted.
 
+echo 'Hide "Are you sure you want to continue connecting (yes/no)?"'
+mkdir -pv ~/.ssh/ && chmod 0700 ~/.ssh/
+echo "StrictHostKeyChecking no" >> ~/.ssh/config
+
  ## in case of CENTOS 7
  cat /etc/redhat-release |egrep "CentOS Linux release 7">/dev/null
  if [ $? -eq 0 ]; then
