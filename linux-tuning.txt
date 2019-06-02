@@ -30,7 +30,7 @@ if [ "${DISTRO}" = "CentOS" ]; then
  rm -f /etc/localtime && ln -s /usr/share/zoneinfo/Africa/Tunis /etc/localtime
 
  echo "# Installing useful packages"
- screen yum install bash-completion mtr vim ntpdate bind-utils nload mlocate logrotate wget htop multitail nmap-ncat openssh-clients bzip2 dmidecode net-snmp net-snmp-utils fping bzip2 -y
+ screen yum install bash-completion mtr vim ntpdate bind-utils nload mlocate logrotate wget htop multitail nc nmap-ncat openssh-clients bzip2 dmidecode net-snmp net-snmp-utils fping bzip2 -y
 
  echo "# Be sure that all packages are Up-To-Date"
  sed -i "s/installonly_limit.*$/installonly_limit=3/g" /etc/yum.conf
