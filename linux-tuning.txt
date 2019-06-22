@@ -32,6 +32,8 @@ if [ "${DISTRO}" = "CentOS" ]; then
  echo "# Installing useful packages"
  screen yum install bash-completion mtr vim ntpdate bind-utils nload mlocate logrotate wget htop multitail nc nmap-ncat openssh-clients bzip2 dmidecode net-snmp net-snmp-utils fping bzip2 -y
 
+ wget -nv -nc https://raw.githubusercontent.com/adel-haouas/linux-tuning/master/screenrc -O /root/.screenrc
+ 
  echo "# Be sure that all packages are Up-To-Date"
  sed -i "s/installonly_limit.*$/installonly_limit=3/g" /etc/yum.conf
  screen yum update -y
