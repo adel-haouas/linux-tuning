@@ -30,7 +30,7 @@ if [ "${DISTRO}" = "CentOS" ]; then
  rm -f /etc/localtime && ln -s /usr/share/zoneinfo/Africa/Tunis /etc/localtime
 
  echo "# Installing useful packages"
- screen yum install bash-completion mtr vim ntpdate bind-utils nload mlocate logrotate wget htop multitail nc nmap-ncat openssh-clients bzip2 dmidecode net-snmp net-snmp-utils fping bzip2 -y
+ screen yum install bash-completion mtr vim ntpdate bind-utils nload mlocate logrotate wget htop multitail nc nmap-ncat openssh-clients bzip2 dmidecode net-snmp net-snmp-utils fping -y
 
  wget -nv -nc https://raw.githubusercontent.com/adel-haouas/linux-tuning/master/screenrc -O /root/.screenrc
  
@@ -125,6 +125,6 @@ sysctl -p
 elif [ "${DISTRO}" = "Debian" ]; then
  echo "Debian..."
  apt update
- apt install dnsutils mtr vim ntpdate wget htop
+ apt install dnsutils mtr vim ntpdate wget htop screen
 fi
 #### That's all 
