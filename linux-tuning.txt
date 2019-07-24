@@ -124,6 +124,7 @@ sysctl -p
 '
 elif [ "${DISTRO}" = "Debian" ]; then
  echo "Debian..."
- 
+ apt update
+ apt install dnsutils mtr vim ntpdate wget htop
 fi
 #### That's all 
