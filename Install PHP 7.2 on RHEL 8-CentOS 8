@@ -1,0 +1,9 @@
+yum module list | grep php 
+
+yum module install php:7.2
+
+#check your PHP version
+php -v
+
+
+src: https://computingforgeeks.com/how-to-install-php-7-2-7-1-on-rhel-8/
