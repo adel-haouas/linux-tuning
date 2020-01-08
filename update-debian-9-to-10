@@ -1,0 +1,3 @@
+cp /etc/apt/sources.list /etc/apt/sources.list_`date +%Y.%m.%d`
+sed -i 's/stretch/buster/g' /etc/apt/sources.list
+apt-get clean all;apt update;apt upgrade;apt full-upgrade
