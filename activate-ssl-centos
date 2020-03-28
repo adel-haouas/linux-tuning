@@ -3,3 +3,7 @@ yum install mod_ssl -y
 
 sed -i "s/^#SSLHonorCipherOrder.*$/SSLHonorCipherOrder on/g" /etc/httpd/conf.d/ssl.conf 
 systemctl restart httpd.service
+
+
+
+#https://www.leaderssl.com/news/471-how-to-disable-outdated-versions-of-ssl-tls-in-apache
