@@ -49,7 +49,8 @@ if [ "${DISTRO}" = "CentOS" ]; then
  find /var/log/ -name "*-201*"|egrep -v ".gz$|.bz2$"|awk '{print "bzip2 -9fz "$0" &"}' | sh
  #find /var/log/ -name "*-201*"|egrep -v ".gz$"|awk '{print "gzip -9 "$0" &"}' | sh
  
- sed -i "s/^\/var\/log\/spooler.*$//g" /etc/logrotate.d/syslog;echo>>/etc/logrotate.d/syslog
+sed -i "s/^\/var\/log\/spooler.*$//g" /etc/logrotate.d/syslog;sed -i '/^$/d' /etc/logrotate.d/syslog
+echo>>/etc/logrotate.d/syslog
 cat << 'EOF' >> /etc/logrotate.d/syslog
 /var/log/spooler
 {
