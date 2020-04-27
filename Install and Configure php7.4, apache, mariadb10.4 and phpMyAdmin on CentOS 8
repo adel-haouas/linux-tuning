@@ -1,0 +1,100 @@
+#####- Install and Configure php7.4, apache, mariadb10.4 and phpMyAdmin on RHEL / CentOS 8 -####
+
+##source: https://computingforgeeks.com/install-and-configure-phpmyadmin-on-rhel-8/
+##source: https://tecadmin.net/install-apache-php-fpm-centos-8/
+
+##Install php 7.4
+dnf install https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+dnf module enable php:remi-7.4
+dnf install php php-cli php-common
+
+##Install Apache with mod_ssl & mod_http2 on CentOS 8 / RHEL 8
+dnf install httpd httpd-tools mod_ssl php-fpm
+systemctl enable --now php-fpm
+systemctl enable --now httpd
+
+##Install MariaDB 10.4
+
+tee /etc/yum.repos.d/MariaDB.repo<<EOF 
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.4/centos8-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+
+dnf install MariaDB-server MariaDB-client --disablerepo=AppStream
+systemctl enable --now mariadb
+
+mysql_secure_installation
+
+#Allow htpp/https traffic
+firewall-cmd --add-service={http,https} --permanent
+firewall-cmd --reload
+
+yum -y install php-mysqlnd
+
+#Install phpMyAdmin on RHEL 8
+DATA="$(wget https://www.phpmyadmin.net/home_page/version.txt -q -O-)"
+URL="$(echo $DATA | cut -d ' ' -f 3)"
+VER="$(echo $DATA | cut -d ' ' -f 1)"
+
+curl -o phpMyAdmin-${VER}-all-languages.tar.gz https://files.phpmyadmin.net/phpMyAdmin/${VER}/phpMyAdmin-${VER}-all-languages.tar.gz
+
+#For English language only package
+curl -o phpMyAdmin-${VER}-english.tar.gz  https://files.phpmyadmin.net/phpMyAdmin/${VER}/phpMyAdmin-${VER}-english.tar.gz
+
+tar xvf phpMyAdmin-${VER}-english.tar.gz
+rm phpMyAdmin-*.tar.gz
+mv phpMyAdmin-*/ /usr/share/phpmyadmin
+
+mkdir -p /var/lib/phpmyadmin/tmp
+chown -R apache:apache /var/lib/phpmyadmin
+
+mkdir /etc/phpmyadmin/
+cp /usr/share/phpmyadmin/config.sample.inc.php  /usr/share/phpmyadmin/config.inc.php
+
+#generate a secret passphrase (32 chars)
+randomBlowfishSecret=$(openssl rand -base64 32)
+
+cd /usr/share/phpmyadmin/
+sed -e "s|cfg\['blowfish_secret'\] = ''|cfg['blowfish_secret'] = '$randomBlowfishSecret'|" config.inc.php > config.inc.php-
+/bin/mv -f config.inc.php- config.inc.php
+
+tee /usr/share/phpmyadmin/config.inc.php<<EOF 
+$cfg['TempDir'] = '/var/lib/phpmyadmin/tmp';
+EOF
+
+cp -p /etc/httpd/conf.d/phpmyadmin.conf{,_`date +%Y.%m.%d`}
+>/etc/httpd/conf.d/phpmyadmin.conf
+cat << 'EOF' >> /etc/httpd/conf.d/phpmyadmin.conf
+# Apache configuration for phpMyAdmin
+Alias /phpMyAdmin /usr/share/phpmyadmin/
+Alias /phpmyadmin /usr/share/phpmyadmin/
+ 
+<Directory /usr/share/phpmyadmin/>
+   AddDefaultCharset UTF-8
+ 
+   <IfModule mod_authz_core.c>
+     # Apache 2.4
+     Require all granted
+   </IfModule>
+   <IfModule !mod_authz_core.c>
+     # Apache 2.2
+     Order Deny,Allow
+     Deny from All
+     Allow from 127.0.0.1
+     Allow from ::1
+   </IfModule>
+</Directory>
+EOF
+
+#Validate Apache configuration
+apachectl configtest
+
+systemctl restart httpd
+
+#Configure SELinux and Firewall
+dnf install policycoreutils-python-utils
+semanage fcontext -a -t httpd_sys_content_t "/usr/share/phpmyadmin(/.*)?"
+restorecon -Rv /usr/share/phpmyadmin
