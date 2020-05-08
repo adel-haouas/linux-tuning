@@ -25,7 +25,7 @@ if [ "${DISTRO}" = "CentOS" ]; then
  cat -s /etc/yum.conf > /etc/yum.conf--;mv -f /etc/yum.conf-- /etc/yum.conf
  echo -e "##Force yum to use IPv4\nip_resolve=4" >>/etc/yum.conf 
 
- yum install -y epel-release screen
+ yum install -y epel-release screen virt-what
  echo "#Fixing logging time"
  rm -f /etc/localtime && ln -s /usr/share/zoneinfo/Africa/Tunis /etc/localtime
 
@@ -75,12 +75,20 @@ EOF
  sed -i '$!N; /^\(.*\)\n\1$/!P; D' /etc/ssh/sshd_config
  service sshd restart
 
+ln -s /etc/ssh/ssh_host_rsa_key.pub /root/.ssh/id_rsa.pub;chmod 0600 /root/.ssh/id_rsa*
+ln -s /etc/ssh/ssh_host_rsa_key /root/.ssh/id_rsa;chmod 0600 /root/.ssh/id_rsa*
+
 ## sed '$!N; /^\(.*\)\n\1$/!P; D': delete duplicate, consecutive lines from a file (emulates "uniq").
 ## First line in a set of duplicate lines is kept, rest are deleted.
 
 echo 'Hide "Are you sure you want to continue connecting (yes/no)?" when opening s ssh connection'
 mkdir -pv ~/.ssh/ && chmod 0700 ~/.ssh/
 echo "StrictHostKeyChecking no" >> ~/.ssh/config
+
+virt-what |egrep -i vmware >/dev/null
+if [ $? -eq 0 ]; then
+ yum -y install open-vm-tools
+fi
 
  ## in case of CENTOS 7
  cat /etc/redhat-release |egrep "CentOS Linux release 7">/dev/null
