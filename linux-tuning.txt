@@ -117,6 +117,14 @@ EOF
  cat /etc/profile.d/colorls.sh |egrep "alias egrep"
  [[ $? = 1 ]] && echo "alias egrep='egrep --color=auto' 2>/dev/null" >>/etc/profile.d/colorls.sh
  . /etc/profile
+ 
+cat << 'EOF' >> /etc/bashrc
+
+ding () {
+ ping $1 | while read pong; do echo "$(date): $pong"; done
+}
+EOF
+. /etc/bashrc
 
  echo 'NOZEROCONF=yes'>>/etc/sysconfig/network
 
