@@ -5,4 +5,4 @@
 #CRITICAL:yum.main:
 #Error: rpmdb open failed
 
-rm -fv  /var/lib/rpm/__db* && rpm -vv –rebuilddb && rpm -vv builddb && yum clean all && pkill yum;screen yum update
+rm -fv  /var/lib/rpm/__db* && rpm -v --rebuilddb && yum clean all && pkill yum;screen yum update
