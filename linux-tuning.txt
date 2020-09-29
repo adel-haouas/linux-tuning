@@ -75,15 +75,15 @@ EOF
  sed -i '$!N; /^\(.*\)\n\1$/!P; D' /etc/ssh/sshd_config
  service sshd restart
 
+echo 'Hide "Are you sure you want to continue connecting (yes/no)?" when opening s ssh connection'
+mkdir -pv ~/.ssh/ && chmod 0700 ~/.ssh/
+echo "StrictHostKeyChecking no" >> ~/.ssh/config
+
 ln -s /etc/ssh/ssh_host_rsa_key.pub /root/.ssh/id_rsa.pub;chmod 0600 /root/.ssh/id_rsa*
 ln -s /etc/ssh/ssh_host_rsa_key /root/.ssh/id_rsa;chmod 0600 /root/.ssh/id_rsa*
 
 ## sed '$!N; /^\(.*\)\n\1$/!P; D': delete duplicate, consecutive lines from a file (emulates "uniq").
 ## First line in a set of duplicate lines is kept, rest are deleted.
-
-echo 'Hide "Are you sure you want to continue connecting (yes/no)?" when opening s ssh connection'
-mkdir -pv ~/.ssh/ && chmod 0700 ~/.ssh/
-echo "StrictHostKeyChecking no" >> ~/.ssh/config
 
 virt-what |egrep -i vmware >/dev/null
 if [ $? -eq 0 ]; then
