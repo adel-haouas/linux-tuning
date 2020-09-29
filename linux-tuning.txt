@@ -47,8 +47,7 @@ if [ "${DISTRO}" = "CentOS" ]; then
  sed -i "s/^id3$/uncompresscmd \/usr\/bin\/bunzip2/g" /etc/logrotate.conf
  sed -i "s/^id4$/compressoptions -9/g" /etc/logrotate.conf
  sed -i "s/^id5$/compressext .bz2/g" /etc/logrotate.conf
- find /var/log/ -name "*-201*"|egrep -v ".gz$|.bz2$"|awk '{print "bzip2 -9fz "$0" &"}' | sh
- #find /var/log/ -name "*-201*"|egrep -v ".gz$"|awk '{print "gzip -9 "$0" &"}' | sh
+ find /var/log/ -name "*-202*"|egrep -v ".gz$|.bz2$"|awk '{print "bzip2 -9fz "$0" &"}' | sh
  
 sed -i "s/^\/var\/log\/spooler.*$//g" /etc/logrotate.d/syslog;sed -i '/^$/d' /etc/logrotate.d/syslog
 echo>>/etc/logrotate.d/syslog
