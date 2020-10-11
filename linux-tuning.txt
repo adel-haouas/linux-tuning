@@ -144,4 +144,13 @@ elif [ "${DISTRO}" = "Debian" ]; then
  apt update
  apt install dnsutils mtr vim ntpdate wget htop screen
 fi
+
+##centos 8 
+dnf install epel-release screen net-tools
+dnf install bash-completion
+echo "fastestmirror=true">> /etc/yum.conf
+
+screen yum install bash-completion mtr vim bind-utils nload mlocate logrotate wget htop multitail nc nmap-ncat openssh-clients bzip2 dmidecode net-snmp net-snmp-utils fping -y
+
+
 #### That's all 
