@@ -2,3 +2,6 @@ yes|ssh-keygen -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
 yes|ssh-keygen -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
 yes|ssh-keygen -N "" -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key
 yes|ssh-keygen -N "" -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
+
+#restart OpenSSH server
+systemctl restart sshd.service 
