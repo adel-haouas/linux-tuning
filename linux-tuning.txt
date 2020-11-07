@@ -67,6 +67,14 @@ EOF
  sed -i "s/^;date.timezone.*$/date.timezone = Africa\/Tunis/g" /etc/php.ini
  sed -i '$!N; /^\(.*\)\n\1$/!P; D' /etc/php.ini
 
+
+##sshd
+yes|ssh-keygen -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
+yes|ssh-keygen -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
+yes|ssh-keygen -N "" -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key
+yes|ssh-keygen -N "" -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
+systemctl restart sshd.service 
+
  echo "# Fix slow ssh connection"
  cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config-bak 
  sed -i "s/#ListenAddress 0.0.0.0/ListenAddress 0.0.0.0/g;s/#UseDNS yes/UseDNS no/g" /etc/ssh/sshd_config
