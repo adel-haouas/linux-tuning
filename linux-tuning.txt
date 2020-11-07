@@ -84,7 +84,7 @@ systemctl restart sshd.service
  service sshd restart
 
 echo 'Hide "Are you sure you want to continue connecting (yes/no)?" when opening s ssh connection'
-mkdir -pv ~/.ssh/ && chmod 0700 ~/.ssh/
+mkdir -pv ~/.ssh/ ; chmod 0700 ~/.ssh/
 echo "StrictHostKeyChecking no" >> ~/.ssh/config
 
 ln -s /etc/ssh/ssh_host_rsa_key.pub /root/.ssh/id_rsa.pub;chmod 0600 /root/.ssh/id_rsa*
