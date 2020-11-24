@@ -19,7 +19,8 @@ if [ "${DISTRO}" = "CentOS" ]; then
  cat /etc/yum/pluginconf.d/fastestmirror.conf |egrep -v "exclude\s*=" >/etc/yum/pluginconf.d/fastestmirror.conf-
  echo "exclude=\.gov, facebook, \.il, \.co\.zw, \.co\.za, \.fr, .rpmfind.net" >>/etc/yum/pluginconf.d/fastestmirror.conf-
  mv -f /etc/yum/pluginconf.d/fastestmirror.conf- /etc/yum/pluginconf.d/fastestmirror.conf
-
+ yum clean all
+ 
  echo "#Force yum to use IPv4"
  sed -i "s/^ip_resolve.*$//g;s/^##Force yum to use IPv4.*$//g" /etc/yum.conf
  cat -s /etc/yum.conf > /etc/yum.conf--;mv -f /etc/yum.conf-- /etc/yum.conf
