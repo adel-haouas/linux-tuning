@@ -25,6 +25,7 @@ if [ "${DISTRO}" = "CentOS" ]; then
  sed -i "s/^ip_resolve.*$//g;s/^##Force yum to use IPv4.*$//g" /etc/yum.conf
  cat -s /etc/yum.conf > /etc/yum.conf--;mv -f /etc/yum.conf-- /etc/yum.conf
  echo -e "##Force yum to use IPv4\nip_resolve=4" >>/etc/yum.conf 
+ sed -i "s/installonly_limit.*$/installonly_limit=3/g" /etc/yum.conf
 
  yum install -y epel-release screen virt-what
  echo "#Fixing logging time"
@@ -37,7 +38,6 @@ if [ "${DISTRO}" = "CentOS" ]; then
  wget -nv -nc https://raw.githubusercontent.com/adel-haouas/linux-tuning/master/distro -O /usr/bin/distro && chmod +x /usr/bin/distro
  
  echo "# Be sure that all packages are Up-To-Date"
- sed -i "s/installonly_limit.*$/installonly_limit=3/g" /etc/yum.conf
  screen yum update -y
 
  echo "# Activate compression in logrotate"
