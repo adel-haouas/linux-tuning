@@ -26,5 +26,8 @@ swapon -va
 lvextend -l +100%FREE  /dev/centos/root
 xfs_growfs  /dev/centos/root
 
+#in case of ext4
+resize2fs /dev/centos/root
+
 #verify
 df -hT;echo;free -mh
