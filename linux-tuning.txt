@@ -1,7 +1,7 @@
 ##########################################################################
 ## Tuning Script for Centos/Redhat/Debian/Ubuntu Server                 ##
 ## Written by: Adel Haouas (adel.haouas@gmail.com)                      ##
-## Last modified: 2019.05.25                                            ##
+## Last modified: 2021.10.15                                            ##
 ##########################################################################
 
 DISTRO=""
