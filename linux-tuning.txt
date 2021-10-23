@@ -77,7 +77,7 @@ yes|ssh-keygen -N "" -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
 systemctl restart sshd.service 
 
  echo "# Fix slow ssh connection"
- cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config-bak 
+ cp -p /etc/ssh/sshd_config{,_`date +%Y.%m.%d`} 
  sed -i "s/#ListenAddress 0.0.0.0/ListenAddress 0.0.0.0/g;s/#UseDNS yes/UseDNS no/g;s/^.*TCPKeepAlive.*$/TCPKeepAlive yes/g" /etc/ssh/sshd_config
  sed -i "s/^.*ClientAliveInterval.*$/ClientAliveInterval 300/g;s/^.*ServerAliveCountMax.*$/ServerAliveCountMax 3/g" /etc/ssh/sshd_config
  cat /etc/ssh/sshd_config|egrep -v "UseDNS no" >/etc/ssh/sshd_config.tmp;cat /etc/ssh/sshd_config.tmp > /etc/ssh/sshd_config
