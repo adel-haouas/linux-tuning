@@ -41,6 +41,7 @@ if [ "${DISTRO}" = "CentOS" ]; then
  screen yum update -y
 
  echo "# Activate compression in logrotate"
+ cp -p /etc/logrotate.conf{,_`date +%Y.%m.%d-%H:%M:%S`}
  sed -i "s/^#compress$/compress/g;s/^#dateext$/dateext/g" /etc/logrotate.conf
  sed -i "s/^compress$/compress\n\nid1\nid2\nid3\nid4\nid5/g" /etc/logrotate.conf
  sed -i "s/^id1$/# use bzip2 whith higher compression than gzip/g" /etc/logrotate.conf
