@@ -98,3 +98,4 @@ systemctl restart httpd
 dnf install policycoreutils-python-utils
 semanage fcontext -a -t httpd_sys_content_t "/usr/share/phpmyadmin(/.*)?"
 restorecon -Rv /usr/share/phpmyadmin
+
