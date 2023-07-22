@@ -10,4 +10,4 @@ EOF
 
 sed -i "s/^.*VERBOSE=.*$/VERBOSE=yes/g" /etc/default/rcS
 
-apt-get clean all;apt update;apt upgrade;screen apt full-upgrade
+apt-get clean all;apt update;screen apt upgrade;screen apt full-upgrade
