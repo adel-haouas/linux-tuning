@@ -112,6 +112,7 @@ fi
  echo "# Disabling selinux"
  sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
 
+cp -p /etc/profile{,_`date +%Y.%m.%d`} 
  cat << 'EOF' >> /etc/profile 
 
 export LANG=en_US.UTF-8
