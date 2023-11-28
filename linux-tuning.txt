@@ -119,6 +119,35 @@ HISTTIMEFORMAT="%d/%m/%Y__%T # "
 export $HISTTIMEFORMAT 2>/dev/null
 export HISTSIZE=100000
 export TZ='Africa/Tunis'
+
+alias ip='ip -c '
+
+export GREP_OPTIONS='--color=auto' GREP_COLOR='1;32'
+export CLICOLOR=1
+export LSCOLORS=ExFxCxDxBxegedabagacad
+
+export COLOR_NC='\e[0m' # No Color
+export COLOR_BLACK='\e[0;30m'
+export COLOR_GRAY='\e[1;30m'
+export COLOR_RED='\e[0;31m'
+export COLOR_LIGHT_RED='\e[1;31m'
+export COLOR_GREEN='\e[0;32m'
+export COLOR_LIGHT_GREEN='\e[1;32m'
+export COLOR_BROWN='\e[0;33m'
+export COLOR_YELLOW='\e[1;33m'
+export COLOR_BLUE='\e[0;34m'
+export COLOR_LIGHT_BLUE='\e[1;34m'
+export COLOR_PURPLE='\e[0;35m'
+export COLOR_LIGHT_PURPLE='\e[1;35m'
+export COLOR_CYAN='\e[0;36m'
+export COLOR_LIGHT_CYAN='\e[1;36m'
+export COLOR_LIGHT_GRAY='\e[0;37m'
+export COLOR_WHITE='\e[1;37m'
+
+UC=$COLOR_WHITE               # user's color
+[ $UID -eq "0" ] && UC=$COLOR_RED   # root's color
+
+PS1="$TITLEBAR\n\[${UC}\]\u \[${COLOR_LIGHT_BLUE}\]\${PWD} \[${COLOR_BLACK}\]\ \n\[${COLOR_LIGHT_GREEN}\]→\[${COLOR_NC}\] "
 EOF
  . /etc/profile 
 
@@ -154,7 +183,10 @@ sysctl -p
 elif [ "${DISTRO}" = "Debian" ]; then
  echo "Debian..."
  apt update
- apt install dnsutils mtr vim ntpdate wget htop screen
+ apt install dnsutils mtr vim ntpdate wget htop screen htop git tmux
+ apt install command-not-found net-tools ioping bash-completion  nload mlocate logrotate
+ apt install phpmyadmin
+ apt update ;screen apt upgrade ;apt autoremove
 fi
 
 ##centos 8 
@@ -165,6 +197,7 @@ echo "fastestmirror=true">> /etc/yum.conf
 echo "max_parallel_downloads=8">> /etc/yum.conf
 
 screen yum install bash-completion mtr vim bind-utils nload mlocate logrotate wget htop multitail nc nmap-ncat openssh-clients bzip2 dmidecode net-snmp net-snmp-utils fping -y
+
 
 
 #### That's all 
