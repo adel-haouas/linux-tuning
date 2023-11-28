@@ -122,6 +122,9 @@ export HISTSIZE=100000
 export TZ='Africa/Tunis'
 
 alias ip='ip -c '
+alias ll='ls --color=auto -lh'
+alias tailf='tail -f '
+alias tf='tail -f '
 
 export GREP_OPTIONS='--color=auto'
 export GREP_COLORS='mt=1;32'
