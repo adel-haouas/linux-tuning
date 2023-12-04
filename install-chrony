@@ -1,0 +1,6 @@
+apt install chrony
+echo "server 196.203.249.241 iburst">>/etc/chrony/sources.d/ati-ntp-server.sources
+echo "server  ntp.ati.tn iburst">>/etc/chrony/sources.d/ntp.ati.tn.sources
+service chrony restart
+chronyc sources
+timedatectl
