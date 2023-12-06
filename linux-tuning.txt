@@ -188,10 +188,10 @@ sysctl -p
 elif [ "${DISTRO}" = "Debian" ]; then
  echo "Debian..."
  apt update
- apt install dnsutils mtr vim ntpdate wget htop screen htop git tmux virt-what
+ apt install dnsutils mtr vim ntpdate wget htop git tmux virt-what
  apt install command-not-found net-tools ioping bash-completion  nload mlocate logrotate
  apt install phpmyadmin
- apt update ;screen apt upgrade ;apt autoremove
+ apt update ;tmux apt upgrade ;apt autoremove
 fi
 
 ##centos 8 
