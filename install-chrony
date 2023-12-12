@@ -4,3 +4,11 @@ echo "server  ntp.ati.tn iburst">>/etc/chrony/sources.d/ntp.ati.tn.sources
 service chrony restart
 chronyc sources
 timedatectl
+
+
+
+#Centos 7
+yum install chrony
+systemctl restart chronyd
+chronyc sources
+timedatectl
