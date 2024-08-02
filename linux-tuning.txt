@@ -34,8 +34,10 @@ if [ "${DISTRO}" = "CentOS" ]; then
  echo "# Installing useful packages"
  screen yum install bash-completion mtr vim ntpdate bind-utils nload mlocate logrotate deltarpm wget htop multitail nc nmap-ncat openssh-clients bzip2 dmidecode net-snmp net-snmp-utils fping -y
 
- wget -nv -nc https://raw.githubusercontent.com/adel-haouas/linux-tuning/master/screenrc -O /root/.screenrc
+ wget -nv -nc https://raw.githubusercontent.com/adel-haouas/linux-tuning/master/screenrc -O ~/.screenrc
  wget -nv -nc https://raw.githubusercontent.com/adel-haouas/linux-tuning/master/distro -O /usr/bin/distro && chmod +x /usr/bin/distro
+ 
+ mkdir -pv ~/.vim/backups ~/.vim/swaps;wget -nv -nc https://raw.githubusercontent.com/adel-haouas/linux-tuning/master/vimrc -O ~/.vimrc
  
  echo "# Be sure that all packages are Up-To-Date"
  screen yum update -y
