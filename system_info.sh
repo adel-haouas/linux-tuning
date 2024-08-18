@@ -22,26 +22,89 @@ CPUModel=$(grep "model name" /proc/cpuinfo | uniq | awk -F: '{print $2}' | sed -
 
 # Get HDD information
 total_hdd=$(df -h --total | awk '/^total/ {print $2}')
+partitions=$(df -hT|egrep -v "tmpfs")
 
 linux_distro=$(cat /etc/*release | grep '^PRETTY_NAME=' | cut -d '"' -f 2) #Get Linux distribution information
 total_ram=$(free -h | awk '/^Mem:/ {print $2}') #Get RAM information
 
 SystemLoad=$(uptime | awk -F'[a-z]:' '{print $2}')
 Uptime=$(uptime | awk '{print $3" "$4" "$5" "$6}'|awk -F"," '{print $1", "$2}')
+processes=`ps aux | wc -l`
 
-echo "${bg_red}${bold}${white}### System Information ###${reset}"
-echo "${bold}${green}Linux Distribution:${reset} $linux_distro"
-echo "${bold}CPU:${reset} $vcpu_count x $CPUModel"
-echo "${bold}System Load (1 min, 5 mins, 15 mins):${reset}$SystemLoad"
-echo "${bold}Uptime:${reset} $Uptime"
+#echo "${bg_red}${bold}${white}### System Information ###${reset}"
+#echo "${bold}${green}Linux Distribution:${reset} $linux_distro"
+#echo "${bold}CPU:${reset} $vcpu_count x $CPUModel"
+#echo "${bold}System Load (1 min, 5 mins, 15 mins):${reset}$SystemLoad"
+#echo "${bold}Uptime:${reset} $Uptime"
 
-echo "${bold}Global IPv4:${reset} $(curl -s -4 icanhazip.com)";
-echo ""
-echo "${bold}RAM:${reset} $(free -hm)"
-echo ""
+#echo "${bold}Global IPv4:${reset} $(curl -s -4 icanhazip.com)";
+#echo ""
+#echo "${bold}RAM:${reset} $(free -hm)"
+#echo ""
 
-echo "### Disks and Partitions Information ###"
-echo "${bold}HDD:${reset} $total_hdd"
-echo "${bold}Partitions:${reset}"
-df -hT|egrep -v "tmpfs"
-echo ""
+#echo "### Disks and Partitions Information ###"
+#echo "${bold}HDD:${reset} $total_hdd"
+#echo "${bold}Partitions:${reset}"
+#df -hT|egrep -v "tmpfs"
+#echo ""
+#######
+
+RESETCOLOR="\E(B\E[m"
+BOLD="\E[1m"
+
+function showCOLORs {
+ echo -e $RESETCOLOR;for code in {0..255}; do echo -en "\e[38;05;${code}m$code: "; done;echo -e $RESETCOLOR
+}
+
+function header {
+ echo -en $RESETCOLOR"\n${bold}\e[38;05;204m$1 \n"$RESETCOLOR
+}
+
+function title {
+ echo -en "${bold}\e[38;05;190m$1 "$RESETCOLOR
+}
+
+function value {
+ echo -en "\e[38;05;224m$1 \n"$RESETCOLOR
+}
+
+function value2 {
+ echo -en "\e[38;05;224m$1 "$RESETCOLOR
+}
+
+header "### System Information ###"
+
+title "Linux Distribution:"
+value "$linux_distro"
+
+title "CPU:"
+value "$vcpu_count x $CPUModel"
+
+title "System Load (1 min, 5 mins, 15 mins):"
+value "$SystemLoad"
+
+title "Uptime:"
+value2 "$Uptime"
+
+title "  Processes:"
+value "$processes"
+
+title "Global IPv4:"
+value "$(curl -s -4 icanhazip.com)"
+
+echo
+title "RAM:"
+value "$(free -hm|column -t)"
+
+header "### Disks and Partitions Information ###"
+
+title "Disk:"
+value "$total_hdd"
+
+title "Partitions:";echo
+value "$partitions"
+
+echo -en "\n"$RESETCOLOR
+######################
+#echo -en "\n\n"
+#showCOLORs
