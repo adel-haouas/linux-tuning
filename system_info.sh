@@ -108,3 +108,4 @@ echo -en "\n"$RESETCOLOR
 ######################
 #echo -en "\n\n"
 #showCOLORs
+apt -qqq install needrestart -y
