@@ -37,4 +37,4 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
 
 EOF
 
-yum clean all;screen yum update && rm -fv /tmp/yum_save*
+#yum clean all;screen yum update && rm -fv /tmp/yum_save*
