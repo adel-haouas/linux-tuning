@@ -28,13 +28,18 @@ calculate_broadcast() {
     esac
 }
 
+# Function to display Seperator
+Seperator() {
+    printf "+------------+-------------------+------------------+------------------------------------+------------------+\n"
+}
+
 # Function to display interface information
 show_interfaces() {
     # Table header
-    printf "+------------+-------------------+------------------+------------------------------------+------------------+\n"
+    Seperator
     printf "| %-10s | %-17s | %-16s | %-34s | %-16s |\n" \
            "Interface" "MAC Address" "IPv4 Address" "IPv6 Address" "Broadcast"
-    printf "+------------+-------------------+------------------+------------------------------------+------------------+\n"
+    Seperator
     
     # Process each interface
     ip -o link show | awk '$2 != "lo:" {print substr($2, 1, length($2)-1)}' | while read -r iface; do
@@ -56,6 +61,7 @@ show_interfaces() {
         if [ -z "$ipv4_list" ] && [ -z "$ipv6_list" ]; then
             printf "| %-10s | %-17s | %-16s | %-34s | %-16s |\n" \
                    "$iface" "$mac" "N/A" "N/A" "N/A"
+            Seperator
             continue
         fi
         
@@ -90,23 +96,16 @@ show_interfaces() {
                 printf "| %-10s | %-17s | %-16s | %-34s | %-16s |\n" \
                        "" "" "$ipv4_info" "$ipv6_info" "$broadcast"
             fi
+            
+            # Only print separator after last row for this interface
+            if [ $((i + 1)) -eq $max_rows ]; then
+                Seperator
+            fi
         done
     done
     
-    # Table footer
-    printf "+------------+-------------------+------------------+------------------------------------+------------------+\n"
-
     echo ""
-    ip route
-    
-    # Legend
-#    echo ""
-#    echo "Legend:"
-#    echo "- Interface: Network interface name (shown only once per interface)"
-#    echo "- MAC Address: Hardware address (shown only once per interface)"
-#    echo "- IPv4 Address: All IPv4 addresses (one per row, includes subnet mask)"
-#    echo "- IPv6 Address: All IPv6 addresses (global preferred, one per row)"
-#    echo "- Broadcast: Calculated IPv4 broadcast address (N/A for IPv6)"
+    ip route    
 }
 
 # Execute the function
