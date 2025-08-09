@@ -40,7 +40,8 @@ case "$FileSystemTYPE" in
 esac
 
 # 5. check
-df -hT /
+df -hT /;echo;lsblk -o NAME,FSTYPE,SIZE,TYPE,MOUNTPOINT | grep -E "(sda|$VG_NAME)"
+
 
 ## old style method ##################################################
 
@@ -77,3 +78,4 @@ resize2fs /dev/centos/root
 
 #verify
 df -hT|egrep -v "tmpfs|loop";echo;free -mh
+echo;lsblk -o NAME,FSTYPE,SIZE,TYPE,MOUNTPOINT | grep -E "(sda|$VG_NAME)"
