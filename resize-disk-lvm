@@ -31,3 +31,48 @@ resize2fs /dev/centos/root
 
 #verify
 df -hT;echo;free -mh
+
+
+## debian / ubuntu ##################################################
+# 1. install parted if not already done
+command -v parted >/dev/null || apt update && apt install -y parted
+
+# 2. grow the extended and logical partitions on-line
+parted ---pretend-input-tty /dev/sda resizepart 2 100%
+parted ---pretend-input-tty /dev/sda resizepart 5 100%
+
+# 3. refresh kernel view
+partprobe /dev/sda
+
+# 4. grow PV → LV → file-system
+pvresize /dev/sda5
+
+MOUNT="${1:-/}" # if $1 is unset or empty (no argument provided), use / as the default value
+DEVICE=$(findmnt -n -o SOURCE "$MOUNT")
+DEVICE=$(realpath "$DEVICE")  # resolve any /dev/mapper links : /dev/mapper/... → real dm-X
+echo $MOUNT
+echo "DEVICE="$DEVICE
+
+#LV_NAME=$(lvdisplay |egrep "LV Path"|egrep -v "swap"|awk '{print $NF}')
+#lvextend -l +100%FREE $LV_NAME
+lvextend -l +100%FREE $DEVICE
+
+FileSystemTYPE=$(lsblk -n -o FSTYPE "$DEVICE")
+case "$FileSystemTYPE" in
+  ext4|ext3|ext2)
+    echo "resize2fs $DEVICE"
+    ;;
+  xfs)
+    echo "xfs_growfs $MOUNT"
+    ;;
+  btrfs)
+    echo "btrfs filesystem resize max $MOUNT"
+    ;;
+  *)
+    echo "Unsupported FS type: $FileSystemTYPE on $DEVICE" >&2
+    exit 1
+    ;;
+esac
+
+# 5. check
+df -hT /
