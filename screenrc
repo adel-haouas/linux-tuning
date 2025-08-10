@@ -1,0 +1,66 @@
+# ~/.screenrc - Advanced Configuration
+
+### 1. TERMINAL & ENVIRONMENT ###
+term screen-256color       # Force 256-color support
+shell -$SHELL             # Use login shell
+defutf8 on                # UTF-8 support
+defflow off               # Disable flow control (Ctrl+S/Ctrl+Q)
+
+### 2. KEY BINDINGS ###
+escape ^Tt                # Remap prefix from Ctrl+A to Ctrl+T (less conflict)
+bind = resize =           # Equalize window sizes
+bind + resize +5          # Increase height
+bind - resize -5          # Decrease height
+bind _ resize max         # Maximize current window
+bind N other              # Toggle last two windows (like Alt+Tab)
+bind ^D detach            # Ctrl+T Ctrl+D to detach
+
+bind f eval "hardstatus ignore"                         # Hide hardstatus: ctrl-a f
+bind F eval "hardstatus alwayslastline"         # Show hardstatus: ctrl-a F
+
+
+### 3. VISUAL ENHANCEMENTS ###
+caption always "%{= kw}%H %{= bw}| %-Lw%{= rW}%50> %n%f* %t %{-}%+Lw%< %=%{= kw}[%Y-%m-%d %c]"
+hardstatus alwayslastline "%{= kG}%H %{= kW}| %-Lw%{= kB}%50> %n%f* %t %{-}%+Lw%< %=%{= kG}[%Y-%m-%d %c]"
+#hardstatus alwayslastline '%{= Kd} %{= Kd}%-w%{= Kr}[%{= KW}%n %t%{= Kr}]%{= Kd}%+w %-= %{KG} %H%{KW}|%{KY}%101`%{KW}|%D %M %d %Y%{= Kc} %C%A%{-}'
+
+### 4. WINDOW MANAGEMENT ###
+startup_message off       # Disable welcome message
+autodetach on             # Auto-detach on terminal disconnect
+defscrollback 10000       # 10,000 line scrollback buffer
+altscreen on              # Preserve terminal contents
+
+### 5. TAB COMPLETION ###
+bind ^I complete          # Ctrl+T Ctrl+I for tab completion
+activity "Activity in %n(%t)"
+
+### 6. MOUSE SUPPORT ###
+mousetrack on             # Enable mouse for xterm
+bind mouse split          # Mouse-click splits windows
+
+### 7. SESSION MANAGEMENT ###
+sessionname main          # Default session name
+screen -t shell 0         # First window: shell
+screen -t vim 1 vim       # Second window: vim
+screen -t htop 2 htop     # Third window: htop
+
+### 8. ADVANCED FEATURES ###
+# Dynamic window titles
+shelltitle '$ |%t'
+# Reattach to existing session if possible
+precmd () { 
+    [ -n "$STY" ] || screen -q -RR
+}
+
+### 9. COLOR SCHEME ###
+# Custom colors (xterm-256color palette)
+attrcolor b ".I"          # Bold
+termcapinfo xterm* 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+defbce on                 # Background color erase
+
+### 10. SECURITY ###
+bindkey -k k1 select 0    # F1-F12 for window switching
+bindkey -k k2 select 1
+# ... up to F12
+multiuser on              # Allow shared sessions (screen -x)
+#acladd $USER              # Grant yourself full permissions
