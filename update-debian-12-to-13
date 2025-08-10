@@ -1,0 +1,6 @@
+cp -p  /etc/apt/sources.list{,_`date +%Y.%m.%d-%H:%M:%S`}
+sed -i 's/bookworm/trixie/g' /etc/apt/sources.list
+
+apt-get clean all;apt update;screen apt upgrade --without-new-pkgs
+screen apt upgrade;screen apt full-upgrade
+reboot
