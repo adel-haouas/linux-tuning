@@ -40,9 +40,9 @@ bind mouse split          # Mouse-click splits windows
 
 ### 7. SESSION MANAGEMENT ###
 sessionname main          # Default session name
-screen -t shell 0         # First window: shell
-screen -t vim 1 vim       # Second window: vim
-screen -t htop 2 htop     # Third window: htop
+#screen -t shell 0         # First window: shell
+#screen -t vim 1 vim       # Second window: vim
+#screen -t htop 2 htop     # Third window: htop
 
 ### 8. ADVANCED FEATURES ###
 # Dynamic window titles
