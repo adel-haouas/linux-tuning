@@ -64,3 +64,13 @@ bindkey -k k2 select 1
 # ... up to F12
 multiuser on              # Allow shared sessions (screen -x)
 #acladd $USER              # Grant yourself full permissions
+
+
+#Command	Action
+#Ctrl+T C	Create new window
+#`Ctrl+T	`	Vertical split
+#Ctrl+T S	Horizontal split
+#Ctrl+T Tab	Switch between splits
+#Ctrl+T X	Close current split
+#Ctrl+T [0-9]	Jump to window number
+#Ctrl+T D	Detach session
