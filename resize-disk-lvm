@@ -2,14 +2,18 @@
 # 1. install parted if not already done
 command -v parted >/dev/null || apt update && apt install -y parted
 
-# 2. grow the extended and logical partitions on-line
+# 2. for virtualized environments, rescan the disk to detect any size increases
+echo 1 > /sys/class/block/sda/device/rescan
+dmesg |tail|ccze -A   #verify the new size
+
+# 3. grow the extended and logical partitions on-line
 parted ---pretend-input-tty /dev/sda resizepart 2 100%
 parted ---pretend-input-tty /dev/sda resizepart 5 100%
 
-# 3. refresh kernel view
+# 4. refresh kernel view
 partprobe /dev/sda
 
-# 4. grow PV → LV → file-system
+# 5. grow PV → LV → file-system
 pvresize /dev/sda5
 
 MOUNT="${1:-/}" # if $1 is unset or empty (no argument provided), use / as the default value
@@ -39,7 +43,7 @@ case "$FileSystemTYPE" in
     ;;
 esac
 
-# 5. check
+# 6. check
 df -hT /;echo;lsblk -o NAME,FSTYPE,SIZE,TYPE,MOUNTPOINT | grep -E "(sda|$VG_NAME)"
 
 
