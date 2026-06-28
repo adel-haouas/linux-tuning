@@ -1,0 +1,18 @@
+termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+attrcolor b ".I"
+defbce on
+defutf8 on
+vbell off
+startup_message off
+defscrollback 30000
+shell -$SHELL
+term xterm-256color
+backtick 101 1 1 uptime | awk '{print $10}'
+hardstatus alwayslastline '%{= Kd} %{= Kd}%-w%{= Kr}[%{= KW}%n %t%{= Kr}]%{= Kd}%+w %-= %{KG} %H%{KW}|%{KY}%101`%{KW}|%D %M %d %Y%{= Kc} %C%A%{-}'
+defhstatus "screen: %n %t"
+activity "activity in %n (%t)"
+bell "bell in %n (%t)"
+altscreen on
+maptimeout 5
+bindkey -k k5 title
+caption always "%{= kw}%-w%{= kb}%n %t%{-}%+w"
