@@ -2,6 +2,8 @@
 
 # ==========================================
 # BEAUTIFUL DIAGNOSTICS SCRIPT (V5.7)
+# chmod +x beautiful_diag.sh
+# echo "alias diag='~/beautiful_diag.sh'" >> .bashrc; source .bashrc
 # ==========================================
 
 BAR_LENGTH=30
