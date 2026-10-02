@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# ==========================================
-# BEAUTIFUL DIAGNOSTICS SCRIPT (V5.7)
+# ======================================================================
+# BEAUTIFUL DIAGNOSTICS SCRIPT (V6.5 — ADAPTIVE LAYOUT)
 # chmod +x beautiful_diag.sh
 # echo "alias diag='~/beautiful_diag.sh'" >> .bashrc; source .bashrc
-# ==========================================
+# ======================================================================
 
 BAR_LENGTH=30
 COL_WIDTH=100
