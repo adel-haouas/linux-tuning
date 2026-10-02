@@ -7,12 +7,39 @@
 # ==========================================
 
 BAR_LENGTH=30
-COL_WIDTH=56
-SEPARATOR="⁞⁞ "
-SEP_COLOR="216"   # Modern soft teal. Try 117 (cyan), 183 (mauve), 216 (peach), 141 (purple).
+COL_WIDTH=100
+SPARK_COLS=20
+SEPARATOR=" ⁞⁞ "
+SEP_COLOR="122"
 
 BOLD='\033[1m'
 RESET='\033[0m'
+
+# ==========================================
+# TERMINAL WIDTH DETECTION & LAYOUT MODE
+# ==========================================
+# Determine terminal width using the most reliable method available
+if [ -n "$BEAUTIFUL_DIAG_FORCE_MODE" ]; then
+    case "$BEAUTIFUL_DIAG_FORCE_MODE" in
+        single) ONE_COL_MODE=1 ;;
+        dual)   ONE_COL_MODE=0 ;;
+        *)      ONE_COL_MODE=0 ;;
+    esac
+else
+    TERM_WIDTH=$(tput cols 2>/dev/null)
+    if [ -z "$TERM_WIDTH" ] || [ "$TERM_WIDTH" -lt 1 ] 2>/dev/null; then
+        TERM_WIDTH=$(stty size 2>/dev/null | awk '{print $2}')
+    fi
+    if [ -z "$TERM_WIDTH" ] || [ "$TERM_WIDTH" -lt 1 ] 2>/dev/null; then
+        TERM_WIDTH="${COLUMNS:-80}"
+    fi
+
+    if [ "$TERM_WIDTH" -lt 180 ]; then
+        ONE_COL_MODE=1
+    else
+        ONE_COL_MODE=0
+    fi
+fi
 
 function header {
  echo -e "${BOLD}\033[38;5;204m### $1 ###${RESET}"
@@ -51,7 +78,7 @@ draw_bar() {
 }
 
 # ==========================================
-# SPARKLINE HELPER
+# SPARKLINE HELPER — LOAD
 # ==========================================
 render_sparkline() {
     local current="$1"
@@ -91,6 +118,86 @@ render_sparkline() {
     }' "$history_file" 2>/dev/null
 }
 
+# ==========================================
+# SPARKLINE HELPER — PER-NIC THROUGHPUT
+# ==========================================
+render_nic_sparkline() {
+    local iface="$1"
+    local rx="$2"
+    local tx="$3"
+    local history_file="$HOME/.beautiful_diag_net_history"
+    local max_samples=$SPARK_COLS
+
+    echo "$(date +%s) $iface $rx $tx" >> "$history_file"
+
+    if [ $(wc -l < "$history_file") -gt 500 ]; then
+        tail -n 500 "$history_file" > "${history_file}.tmp" && mv "${history_file}.tmp" "$history_file"
+    fi
+
+    awk -v ifc="$iface" -v max_samples="$max_samples" '
+    function short(bytes,    units, i, size) {
+        split("B K M G T", units, " ");
+        size = bytes;
+        i = 1;
+        while (size >= 1024 && i < 5) { size /= 1024; i++; }
+        if (i == 1) return sprintf("%dB", size);
+        if (size < 10) return sprintf("%.1f%s", size, units[i]);
+        return sprintf("%.0f%s", size, units[i]);
+    }
+    BEGIN {
+        split("▁ ▂ ▃ ▄ ▅ ▆ ▇ █", blocks, " ");
+        n = 0;
+    }
+    $2 == ifc {
+        n++;
+        rx[n] = $3 + 0;
+        tx[n] = $4 + 0;
+    }
+    END {
+        if (n > max_samples) {
+            start = n - max_samples + 1;
+        } else {
+            start = 1;
+        }
+        count = n - start + 1;
+
+        if (count < 2) {
+            printf "\033[2m(need 2+ samples)\033[0m";
+            exit;
+        }
+
+        samples = count - 1;
+        max = 0;
+        min = 99999999999;
+        for (i = start + 1; i <= n; i++) {
+            drx = rx[i] - rx[i-1];
+            dtx = tx[i] - tx[i-1];
+            if (drx < 0) drx = 0;
+            if (dtx < 0) dtx = 0;
+            delta[i] = drx + dtx;
+            if (delta[i] > max) max = delta[i];
+            if (delta[i] < min) min = delta[i];
+        }
+        if (max < 1) max = 1;
+
+        log_max = log(max + 1);
+        printf "\033[38;5;122m";
+        for (i = start + 1; i <= n; i++) {
+            idx = int((log(delta[i] + 1) / log_max) * 7) + 1;
+            if (idx < 1) idx = 1;
+            if (idx > 8) idx = 8;
+            printf "%s", blocks[idx];
+        }
+        printf "\033[0m";
+
+        if (samples < max_samples) {
+            printf " \033[2m[%d/%d] %s…%s\033[0m", samples, max_samples, short(min), short(max);
+        } else {
+            printf " \033[2m%s…%s\033[0m", short(min), short(max);
+        }
+    }' "$history_file" 2>/dev/null
+}
+
 strip_ansi() {
     sed -E 's/\x1b\[[0-9;]*m//g'
 }
@@ -119,6 +226,14 @@ if [ -f /etc/os-release ]; then
 else
     OS_NAME=$(uname -s)
 fi
+
+if [ -f /etc/debian_version ]; then
+    DEB_VER=$(cat /etc/debian_version | tr -d '\n\r' | tr -d ' ')
+    if echo "$DEB_VER" | grep -qE '^[0-9]+\.[0-9]+$'; then
+        OS_NAME="${OS_NAME} [version ${DEB_VER}]"
+    fi
+fi
+
 title "Linux Distribution: "
 echo -e "${RESET} ${OS_NAME}"
 
@@ -213,122 +328,159 @@ echo ""
 # ==========================================
 header "Partitions"
 
-echo -e "Filesystem                  Size  Used Avail Use% Mounted on"
-
-process_mount_str() {
-    local mount_point="$1"
-    if mountpoint -q "$mount_point" 2>/dev/null || df "$mount_point" >/dev/null 2>&1; then
-        local fs=$(df -h "$mount_point" | awk 'NR==2 {print $1}')
-        local total=$(df -h "$mount_point" | awk 'NR==2 {print $2}')
-        local used=$(df -h "$mount_point" | awk 'NR==2 {print $3}')
-        local avail=$(df -h "$mount_point" | awk 'NR==2 {print $4}')
-        local percent=$(df -h "$mount_point" | awk 'NR==2 {print $5}' | tr -d '%')
-
-        printf "%-27s %5s %5s %5s %4s%% %s\n" "$fs" "$total" "$used" "$avail" "$percent" "$mount_point"
-        echo "$percent"
+MOUNTS=()
+for m in "/" "/boot" "/data"; do
+    if mountpoint -q "$m" 2>/dev/null || df "$m" >/dev/null 2>&1; then
+        MOUNTS+=("$m")
     fi
-}
+done
 
-ROOT_P=$(process_mount_str "/" | tail -n 1)
-process_mount_str "/" | head -n -1
-BOOT_P=$(process_mount_str "/boot" | tail -n 1)
-process_mount_str "/boot" | head -n -1
+MAX_FS_LEN=10
+for m in "${MOUNTS[@]}"; do
+    fs=$(df -h "$m" | awk 'NR==2 {print $1}')
+    len=${#fs}
+    if [ "$len" -gt "$MAX_FS_LEN" ]; then
+        MAX_FS_LEN=$len
+    fi
+done
 
-ROOT_BAR=$(draw_bar_str "Root " "$ROOT_P")
-BOOT_BAR=$(draw_bar_str "Boot " "$BOOT_P")
-printf "%b   %b\n" "$ROOT_BAR" "$BOOT_BAR"
+FS_WIDTH=$((MAX_FS_LEN + 2))
+
+printf "\033[2m%-${FS_WIDTH}s %5s %5s %5s %4s %s\033[0m\n" "Filesystem" "Size" "Used" "Avail" "Use%" "Mounted on"
+
+for m in "${MOUNTS[@]}"; do
+    fs=$(df -h "$m" | awk 'NR==2 {print $1}')
+    total=$(df -h "$m" | awk 'NR==2 {print $2}')
+    used=$(df -h "$m" | awk 'NR==2 {print $3}')
+    avail=$(df -h "$m" | awk 'NR==2 {print $4}')
+    percent=$(df -h "$m" | awk 'NR==2 {print $5}' | tr -d '%')
+
+    printf "%-${FS_WIDTH}s %5s %5s %5s %3s%% %s\n" "$fs" "$total" "$used" "$avail" "$percent" "$m"
+done
+echo ""
+
+BAR_LINE=""
+for m in "${MOUNTS[@]}"; do
+    percent=$(df -h "$m" | awk 'NR==2 {print $5}' | tr -d '%')
+    label=$(printf "%-5s" "$m")
+    BAR=$(draw_bar_str "$label" "$percent")
+    if [ -z "$BAR_LINE" ]; then
+        BAR_LINE="$BAR"
+    else
+        BAR_LINE="${BAR_LINE}   ${BAR}"
+    fi
+done
+printf "%b\n" "$BAR_LINE"
 echo ""
 
 # ==========================================
-# NETWORK STATS — 2 NICs PER ROW WITH SEPARATOR
+# NETWORK STATS — ADAPTIVE LAYOUT
 # ==========================================
 header "Network"
 
-NET_TMP=$(mktemp)
+NIC_LINES=()
 
-awk '
-function humanize(bytes,    units, i, size) {
-    split("B KiB MiB GiB TiB", units, " ");
-    size = bytes;
-    i = 1;
-    while (size >= 1024 && i < 5) { size /= 1024; i++; }
-    if (i == 1) return sprintf("%d %s", size, units[i]);
-    return sprintf("%.2f %s", size, units[i]);
-}
-function status_color(state) {
-    if (state == "up")      return "114";
-    if (state == "down")    return "203";
-    if (state == "dormant") return "214";
-    return "240";
-}
-NR>2 {
+while IFS= read -r iface; do
+    [ -z "$iface" ] && continue
+
+    read -r RX_BYTES TX_BYTES < <(awk -v ifc="$iface" '
+        NR>2 {
+            gsub(/^[ \t]+/, "");
+            split($0, arr, ":");
+            name = arr[1];
+            gsub(/^[ \t]+/, "", name);
+            if (name == ifc) {
+                split(arr[2], s, " ");
+                n = 0;
+                for (i in s) if (s[i] != "") { n++; vals[n] = s[i]; }
+                printf "%s %s\n", vals[1], vals[9];
+                exit;
+            }
+        }' /proc/net/dev)
+
+    [ -z "$RX_BYTES" ] && continue
+
+    RX_H=$(awk -v b="$RX_BYTES" 'BEGIN {
+        split("B KiB MiB GiB TiB", u, " ");
+        s = b; i = 1;
+        while (s >= 1024 && i < 5) { s /= 1024; i++; }
+        if (i == 1) printf "%d %s", s, u[i]; else printf "%.2f %s", s, u[i];
+    }')
+    TX_H=$(awk -v b="$TX_BYTES" 'BEGIN {
+        split("B KiB MiB GiB TiB", u, " ");
+        s = b; i = 1;
+        while (s >= 1024 && i < 5) { s /= 1024; i++; }
+        if (i == 1) printf "%d %s", s, u[i]; else printf "%.2f %s", s, u[i];
+    }')
+
+    STATE=$(cat "/sys/class/net/$iface/operstate" 2>/dev/null || echo "unknown")
+    case "$STATE" in
+        up)      COLOR="114" ;;
+        down)    COLOR="203" ;;
+        dormant) COLOR="214" ;;
+        *)       COLOR="240" ;;
+    esac
+    STATE_UP=$(echo "$STATE" | tr 'a-z' 'A-Z')
+
+    SPARK=$(render_nic_sparkline "$iface" "$RX_BYTES" "$TX_BYTES")
+
+    NIC_LINE=$(printf "  \033[38;5;255m%-8s\033[0m  \033[38;5;%sm[%-5s]\033[0m  RX: %-10s  TX: %-10s %b" \
+        "$iface" "$COLOR" "$STATE_UP" "$RX_H" "$TX_H" "$SPARK")
+
+    NIC_LINES+=("$NIC_LINE")
+done < <(awk 'NR>2 {
     gsub(/^[ \t]+/, "");
     split($0, arr, ":");
     iface = arr[1];
     gsub(/^[ \t]+/, "", iface);
     if (iface == "lo" || iface ~ /^tun/) next;
+
+    state_file = "/sys/class/net/" iface "/operstate";
+    state = "unknown";
+    if ((getline st < state_file) > 0) { state = st; close(state_file); }
+
     stats = arr[2];
     split(stats, s, " ");
     n = 0;
     for (i in s) if (s[i] != "") { n++; vals[n] = s[i]; }
-    rx = vals[1];
-    tx = vals[9];
+    if (vals[1] < 1048576 && vals[9] < 1048576 && state != "down") next;
+    print iface;
+}' /proc/net/dev)
 
-    state_file = "/sys/class/net/" iface "/operstate";
-    state = "unknown";
-    if ((getline st < state_file) > 0) {
-        state = st;
-        close(state_file);
-    }
-
-    if (rx < 1048576 && tx < 1048576 && state != "down") next;
-
-    color = status_color(state);
-    state_upper = toupper(state);
-    status_tag = sprintf("\033[38;5;%sm[%-5s]\033[0m", color, state_upper);
-
-    printf "  \033[38;5;255m%-8s\033[0m  %s  RX: %-10s  TX: %s\n", iface, status_tag, humanize(rx), humanize(tx);
-}' /proc/net/dev > "$NET_TMP"
-
-NIC_COUNT=$(wc -l < "$NET_TMP")
+NIC_COUNT=${#NIC_LINES[@]}
 
 if [ "$NIC_COUNT" -eq 0 ]; then
     echo -e "\033[2m# All interfaces have less than 1 MiB of traffic.\033[0m"
 else
-    NIC_LINES=()
-    while IFS= read -r line; do
-        NIC_LINES+=("$line")
-    done < "$NET_TMP"
+    if [ "$ONE_COL_MODE" -eq 1 ]; then
+        # Single-column mode: 1 NIC per row
+        for i in $(seq 0 $((NIC_COUNT - 1))); do
+            printf "%b\n" "${NIC_LINES[$i]}"
+        done
+    else
+        # Dual-column mode: 2 NICs per row
+        SEP_COLORED="\033[38;5;${SEP_COLOR}m${SEPARATOR}\033[0m"
 
-    PADDED=()
-    for line in "${NIC_LINES[@]}"; do
-        plain=$(printf "%b" "$line" | strip_ansi)
-        len=${#plain}
-        pad=$(( COL_WIDTH - len ))
-        if [ "$pad" -lt 1 ]; then pad=1; fi
-        PADDED+=("$(printf "%b%${pad}s" "$line" "")")
-    done
-
-    # Modern separator with configurable color
-    SEP_COLORED="\033[38;5;${SEP_COLOR}m${SEPARATOR}\033[0m"
-
-    i=0
-    while [ $i -lt ${#PADDED[@]} ]; do
-        left="${PADDED[$i]}"
-        right=""
-        if [ $((i + 1)) -lt ${#PADDED[@]} ]; then
-            right="${PADDED[$((i + 1))]}"
-        fi
-        if [ -n "$right" ]; then
-            printf "%b%b%b\n" "$left" "$SEP_COLORED" "$right"
-        else
-            printf "%b\n" "$left"
-        fi
-        i=$((i + 2))
-    done
+        i=0
+        while [ $i -lt $NIC_COUNT ]; do
+            left="${NIC_LINES[$i]}"
+            right=""
+            if [ $((i + 1)) -lt $NIC_COUNT ]; then
+                right="${NIC_LINES[$((i + 1))]}"
+            fi
+            if [ -n "$right" ]; then
+                left_plain=$(printf "%b" "$left" | strip_ansi)
+                left_len=${#left_plain}
+                pad=$(( COL_WIDTH - left_len ))
+                if [ "$pad" -lt 1 ]; then pad=1; fi
+                printf "%b%${pad}s%b%b\n" "$left" "" "$SEP_COLORED" "$right"
+            else
+                printf "%b\n" "$left"
+            fi
+            i=$((i + 2))
+        done
+    fi
 fi
-
-rm -f "$NET_TMP"
 echo ""
 
 # ==========================================
@@ -408,4 +560,10 @@ echo ""
 # ==========================================
 echo -e "\033[2m# compare load with core count: nproc\033[0m"
 echo -e "\033[2m# low available + busy swap = memory pressure\033[0m"
-echo -e "\033[2m# sparkline history stored at: ~/.beautiful_diag_history\033[0m"
+echo -e "\033[2m# sparkline history: ~/.beautiful_diag_history (load), ~/.beautiful_diag_net_history (net)\033[0m"
+echo -e "\033[2m# network sparkline uses log scale (see render_nic_sparkline)\033[0m"
+if [ "$ONE_COL_MODE" -eq 1 ]; then
+    echo -e "\033[2m# layout: single-column (terminal < 180 cols)\033[0m"
+else
+    echo -e "\033[2m# layout: dual-column (terminal >= 180 cols)\033[0m"
+fi
